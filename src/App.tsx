@@ -1,10 +1,12 @@
 import "./App.css";
-import PhotoGallery from "./components/PhotoGallery";
+import LogIn from "./components/LogIn";
+import Register from "./components/Register";
+//import PhotoGallery from "./components/PhotoGallery";
 
 function App() {
   return (
     <>
-      <PhotoGallery />
+      <LogIn />
     </>
   );
 }

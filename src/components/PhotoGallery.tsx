@@ -1,16 +1,30 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Card, Center, Image, Input, SimpleGrid } from "@chakra-ui/react";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import {
   SortableContext,
   arrayMove,
-  rectSwappingStrategy,
+  rectSortingStrategy,
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+interface Gallery {
+  id: number;
+  tag: string;
+  url: string;
+}
+
 const PhotoGallery = () => {
-  const [photos, setPhotos] = useState([
+  const [photos, setPhotos] = useState<Gallery[]>([
     {
       id: 1,
       tag: "mercedes",
@@ -72,35 +86,40 @@ const PhotoGallery = () => {
       url: "https://images.pexels.com/photos/3802510/pexels-photo-3802510.jpeg?auto=compress&cs=tinysrgb&w=800",
     },
   ]);
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
 
   const SortablePhotos = ({ photo }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
       useSortable({ id: photo.id });
     const style = { transition, transform: CSS.Transform.toString(transform) };
     return (
-      <Card ref={setNodeRef} style={style} {...attributes} {...listeners}>
-        <Image src={photo.url} objectFit={"cover"} />
+      <Card
+        height="300px"
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        cursor="move"
+      >
+        <Image src={photo.url} objectFit={"cover"} alt={photo.tag} />
       </Card>
     );
   };
 
-  const onDragEnd = (event) => {
+  const onDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (active.id === over.id) {
+    if (active.id === over?.id) {
       return;
     }
     setPhotos((photos) => {
       const oldIndex = photos.findIndex((photo) => photo.id === active.id);
-      const newIndex = photos.findIndex((photo) => photo.id === over.id);
+      const newIndex = photos.findIndex((photo) => photo.id === over?.id);
       return arrayMove(photos, oldIndex, newIndex);
     });
   };
   let inputSearch = useRef(null);
   const [searchCar, setSearchCar] = useState("");
 
-  useEffect(() => {
-    inputSearch.current.focus();
-  });
   return (
     <>
       <Center>
@@ -114,12 +133,16 @@ const PhotoGallery = () => {
       </Center>
 
       <SimpleGrid
-        columns={{ sm: 1, md: 2, lg: 3 }}
-        padding={"15px"}
+        columns={{ sm: 2, md: 3, lg: 4 }}
+        padding={"10px"}
         spacing={"10px"}
       >
-        <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-          <SortableContext items={photos} strategy={rectSwappingStrategy}>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+          sensors={sensors}
+        >
+          <SortableContext items={photos} strategy={rectSortingStrategy}>
             {photos
               .filter((photo) => {
                 if (searchCar === "") {
