@@ -1,7 +1,12 @@
 import "./App.css";
+import PhotoGallery from "./components/PhotoGallery";
 
 function App() {
-  return <>Phone Gallery</>;
+  return (
+    <>
+      <PhotoGallery />
+    </>
+  );
 }
 
 export default App;
